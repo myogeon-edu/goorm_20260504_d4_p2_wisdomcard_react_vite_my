@@ -14,7 +14,11 @@ const DEFAULT_CARDS_PATH = path.join(DATA_DIR, "defaultCards.json");
 const SEARCH_LOG_PATH = path.join(DATA_DIR, "searchLog.json");
 const TTS_CACHE_DIR = path.join(DATA_DIR, "tts");
 
-const PORT = Number(process.env.API_PORT, 10) || 8787;
+/* Render 등 PaaS는 PORT를 주입, 로컬은 API_PORT 또는 8787 */
+const PORT =
+  Number(process.env.PORT, 10) ||
+  Number(process.env.API_PORT, 10) ||
+  8787;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 const OPENAI_TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1";
@@ -510,8 +514,8 @@ const server = http.createServer(async (req, res) => {
   res.end();
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(
-    `[api] http://127.0.0.1:${PORT}  GET /api/cards  POST /api/quote  POST /api/tts`,
+    `[api] listening on :${PORT}  GET /api/cards  POST /api/quote  POST /api/tts`,
   );
 });

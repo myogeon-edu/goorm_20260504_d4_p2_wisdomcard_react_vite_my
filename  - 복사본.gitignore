@@ -1,0 +1,130 @@
+# === OS specific files ===
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# === Security & Environment variables ===
+# 개인정보 및 API 키 보호를 위해 필수 제외
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+auth.json
+secrets.json
+
+# === Development Tools ===
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains (PyCharm 등)
+.idea/
+
+# === Python specific ===
+# 파이썬 컴파일 및 가상환경 파일
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# === Web / Frontend ===
+# 패키지 매니저 및 빌드 결과물
+node_modules/
+dist/
+build/
+.npm
+.eslintcache
+
+
+# === Media Files ===
+# Video formats
+*.mp4
+*.mov
+*.avi
+*.wmv
+*.flv
+*.mkv
+*.webm
+*.mpeg
+*.mpg
+
+# Audio formats
+*.mp3
+*.wav
+*.ogg
+*.m4a
+*.flac
+
+# Large Image Assets (Optional: 원본 소스만 제외하고 싶을 때)
+*.psd
+*.ai
+*.sketch
+*.fig
+*.raw
+*.tiff
+
+# === Binary & Large Files ===
+# Database files (local)
+*.db
+*.sqlite3
+*.dump
+*.sql
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Big Data files
+*.csv
+*.json
+*.xml
+
+
+# OS generated archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.iso
+
+
+
+[not_git]/
+
+######## except
+!configs/*.zip
+!configs/*.tar.gz
+
+![exec_file]/*.zip
+![exec_file]/*.tar.gz
+![exec_file]/*

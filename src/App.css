@@ -1,0 +1,727 @@
+/* 메인 카드 415×600 비율 — flex 슬롯에 끌려 가로가 줄지 않도록 cover-flow-inner는 flex-shrink:0 */
+:root {
+  --card-max: min(415px, calc(100vw - 1.25rem));
+  --card-height: calc(var(--card-max) * 600 / 415);
+  /* 캐러셀 어두운 박스 안: 카드 상·하 숨 쉴 공간 */
+  --carousel-pad-top: clamp(1.35rem, 5.2vmin, 2.65rem);
+  --carousel-pad-bottom: clamp(2.85rem, 12vmin, 5.25rem);
+}
+
+.app {
+  min-height: 100vh;
+  padding: clamp(0.85rem, 3vw, 1.65rem) clamp(0.75rem, 2.5vw, 1.35rem) 2.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.9rem, 2.4vw, 1.45rem);
+}
+
+/* --- Cover Flow–style carousel (겹침·3D·반사) --- */
+.carousel {
+  position: relative;
+  width: min(calc(100vw - 1.35rem), calc(var(--card-max) * 1.72 + 3.25rem));
+  max-width: 100%;
+  overflow: hidden;
+  touch-action: pan-x;
+  padding-top: var(--carousel-pad-top);
+  padding-inline: clamp(0.65rem, 2.2vw, 1.15rem);
+  padding-bottom: var(--carousel-pad-bottom);
+  min-height: calc(
+    var(--card-height) + var(--carousel-pad-top) + var(--carousel-pad-bottom) +
+      clamp(1.25rem, 4vmin, 2rem)
+  );
+  background: radial-gradient(
+    ellipse 120% 85% at 50% 38%,
+    #353230 0%,
+    #1a1918 52%,
+    #0d0c0c 100%
+  );
+  border-radius: clamp(12px, 2vw, 18px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 40px rgba(0, 0, 0, 0.18);
+  perspective: min(1400px, 200vw);
+  perspective-origin: 50% 42%;
+  isolation: isolate;
+}
+
+.carousel-track {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  min-height: calc(var(--card-height) + clamp(0.85rem, 3vmin, 1.65rem));
+  padding-block: clamp(0.45rem, 1.8vmin, 0.95rem);
+  transform-style: preserve-3d;
+  transition: transform 0.48s cubic-bezier(0.2, 0.9, 0.25, 1);
+  will-change: transform;
+  cursor: grab;
+}
+
+.carousel-track:active {
+  cursor: grabbing;
+}
+
+.carousel-slide {
+  flex: 0 0 auto;
+  /* 슬롯은 좁게 유지 · min-width:0으로 자식(카드) 폭이 슬롯에 끌려 줄어들지 않게 */
+  width: clamp(4.75rem, min(24vw, calc(var(--card-max) * 0.22)), 8.25rem);
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding-inline: 0;
+  transform-style: preserve-3d;
+  overflow: visible;
+}
+
+.carousel-slide-inner.cover-flow-inner {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--card-max);
+  max-width: min(var(--card-max), calc(100vw - 0.5rem));
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  isolation: isolate;
+  transition:
+    transform 0.48s cubic-bezier(0.2, 0.9, 0.25, 1),
+    width 0.48s cubic-bezier(0.2, 0.9, 0.25, 1);
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.42));
+  -webkit-box-reflect: below 6px
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 38%,
+      rgba(12, 11, 10, 0.32) 68%,
+      rgba(8, 7, 6, 0.78) 100%
+    );
+}
+
+/* 가운데도 동일 비율(415:600) — 3D로만 메인 강조 */
+.carousel-slide-inner.cover-flow-inner.cover-flow-inner--center {
+  width: var(--card-max);
+  max-width: min(var(--card-max), calc(100vw - 0.5rem));
+}
+
+/* 옆 카드: 전체 opacity 제거 대신 덮개 → 형제 쌓임(z-index)이 깨지지 않음 */
+.carousel-slide-inner.cover-flow-inner:not(.cover-flow-inner--center)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  border-radius: clamp(10px, 1.6vw, 16px);
+  background: rgba(12, 11, 10, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 44%;
+  z-index: 1200;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(40, 38, 36, 0.92);
+  color: #f5f5f4;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    opacity 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.carousel-nav:hover:not(:disabled) {
+  border-color: rgba(255, 200, 170, 0.55);
+  background: rgba(55, 52, 48, 0.96);
+}
+
+.carousel-nav:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.carousel-nav--prev {
+  left: clamp(0.35rem, 1.5vw, 0.65rem);
+}
+
+.carousel-nav--next {
+  right: clamp(0.35rem, 1.5vw, 0.65rem);
+}
+
+.carousel-hint {
+  margin: 0;
+  font-size: clamp(0.75rem, 2vw, 0.8125rem);
+  color: #78716c;
+  text-align: center;
+  max-width: var(--card-max);
+}
+
+.card-shell--busy {
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.card-shell--empty {
+  box-shadow: 0 12px 32px rgba(47, 42, 37, 0.06);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  width: min(calc(100vw - 1.35rem), calc(var(--card-max) * 1.72 + 3.25rem));
+  max-width: 100%;
+}
+
+/* --- 상단: OpenAI TTS 재생(iTunes 스타일 LCD) --- */
+.tts-player-wrap {
+  width: min(calc(100vw - 1.35rem), calc(var(--card-max) * 1.72 + 3.25rem));
+  max-width: 100%;
+}
+
+.tts-player-wrap audio {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tts-player {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: clamp(0.5rem, 1.8vw, 0.75rem);
+  padding: clamp(0.45rem, 1.5vw, 0.6rem);
+  border-radius: clamp(10px, 1.8vw, 14px);
+  background: linear-gradient(180deg, #e8e4df 0%, #d4cfc8 48%, #c9c3bb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+    0 4px 14px rgba(28, 25, 23, 0.12);
+}
+
+.tts-transport {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.tts-transport-btn {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: linear-gradient(180deg, #faf8f5 0%, #e3ded8 100%);
+  color: #292524;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.tts-transport-btn:hover:not(:disabled) {
+  border-color: #c15b41;
+}
+
+.tts-transport-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.tts-transport-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tts-volume-slot {
+  width: 2.5rem;
+  height: 0.35rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.tts-lcd {
+  flex: 1;
+  min-width: 0;
+  border-radius: clamp(8px, 1.4vw, 11px);
+  padding: 2px;
+  background: linear-gradient(180deg, #9c9894 0%, #7a7672 100%);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.tts-lcd-screen {
+  border-radius: clamp(6px, 1.2vw, 9px);
+  padding: clamp(0.45rem, 1.6vw, 0.6rem) clamp(0.55rem, 1.8vw, 0.7rem)
+    clamp(0.4rem, 1.4vw, 0.55rem);
+  background: linear-gradient(
+    180deg,
+    rgba(250, 248, 244, 0.97) 0%,
+    rgba(232, 228, 222, 0.98) 100%
+  );
+  box-shadow:
+    inset 0 2px 8px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.tts-lcd-title {
+  margin: 0;
+  font-size: clamp(0.78rem, 2.1vw, 0.9rem);
+  font-weight: 700;
+  line-height: 1.35;
+  color: #1c1917;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tts-lcd-sub {
+  margin: 0.15rem 0 0;
+  font-size: clamp(0.68rem, 1.85vw, 0.78rem);
+  font-weight: 500;
+  color: #57534e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tts-lcd-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: clamp(0.35rem, 1.2vw, 0.5rem);
+}
+
+.tts-lcd-time {
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: #57534e;
+  flex-shrink: 0;
+  min-width: 2.1rem;
+}
+
+.tts-lcd-time--remain {
+  text-align: right;
+}
+
+.tts-progress-range {
+  flex: 1;
+  min-width: 0;
+  height: 0.45rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tts-progress-range:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tts-progress-range::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #d6d3d1 0%, #b9b5b1 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.tts-progress-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -3px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, #fafaf9 0%, #d6d3d1 100%);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.tts-progress-range::-moz-range-track {
+  height: 5px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #d6d3d1 0%, #b9b5b1 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.tts-progress-range::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, #fafaf9 0%, #d6d3d1 100%);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* --- 하단: Cover Flow 스타일 카드 인덱스 스크롤바 --- */
+.carousel-scrubber {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: min(calc(100vw - 1.35rem), calc(var(--card-max) * 1.72 + 3.25rem));
+  max-width: 100%;
+  padding: 0.35rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(41, 39, 36, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.carousel-scrub-arrow {
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(55, 52, 48, 0.95);
+  color: #f5f5f4;
+  font-size: 0.65rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.carousel-scrub-arrow:hover:not(:disabled) {
+  border-color: rgba(255, 200, 170, 0.45);
+  background: rgba(68, 64, 60, 0.98);
+}
+
+.carousel-scrub-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.carousel-scrub-range {
+  flex: 1;
+  min-width: 0;
+  height: 0.55rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.carousel-scrub-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.carousel-scrub-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 2.25rem;
+  height: 10px;
+  margin-top: -1px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #e7e5e4 0%, #a8a29e 100%);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.carousel-scrub-range::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.carousel-scrub-range::-moz-range-thumb {
+  width: 2.25rem;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #e7e5e4 0%, #a8a29e 100%);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* 카드: 명언 TTS 버튼 */
+.card-tts-row {
+  margin: clamp(0.35rem, 1.2vw, 0.55rem) 0 0;
+}
+
+.card-tts-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(193, 91, 65, 0.45);
+  background: linear-gradient(180deg, #fffefb 0%, #fce8e2 100%);
+  color: #9a3412;
+  font-size: clamp(0.68rem, 1.9vw, 0.78rem);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(193, 91, 65, 0.12);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    opacity 0.15s;
+}
+
+.card-tts-btn:hover:not(:disabled) {
+  border-color: #c15b41;
+  box-shadow: 0 2px 8px rgba(193, 91, 65, 0.18);
+}
+
+.card-tts-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn {
+  border: 1px solid #d6d3d1;
+  border-radius: 12px;
+  padding: clamp(0.55rem, 1.8vw, 0.7rem) clamp(1rem, 3vw, 1.25rem);
+  font-size: clamp(0.8125rem, 2.2vw, 0.875rem);
+  font-weight: 600;
+  color: #1c1917;
+  background: linear-gradient(180deg, #fffefb 0%, #f5f0e8 100%);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: #c15b41;
+  box-shadow: 0 2px 8px rgba(193, 91, 65, 0.12);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.card-shell {
+  position: relative;
+  z-index: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  /* 415×600 — 높이는 --card-height(= 너비×600/415)로 고정 */
+  aspect-ratio: 415 / 600;
+  height: var(--card-height);
+  min-height: 0;
+  max-height: var(--card-height);
+  border-radius: clamp(10px, 1.6vw, 16px);
+  overflow: hidden;
+  border: 1px solid #e7e2da;
+  box-shadow: 0 20px 48px rgba(47, 42, 37, 0.1);
+  background: #fffefb;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
+  contain: paint;
+}
+
+.card-hero {
+  position: relative;
+  min-height: 0;
+  background: #f0ebe3;
+}
+
+.card-hero-img {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.38s ease;
+}
+
+.card-hero-img--visible {
+  opacity: 1;
+}
+
+.card-hero-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(145deg, #faf7f2 0%, #ebe6df 100%);
+}
+
+.card-hero-placeholder--empty {
+  min-height: 100%;
+}
+
+.card-hero-source {
+  position: absolute;
+  right: clamp(0.35rem, 1.5vw, 0.55rem);
+  bottom: clamp(0.25rem, 1.2vw, 0.4rem);
+  font-size: clamp(0.5625rem, 1.6vw, 0.625rem);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  opacity: 0.9;
+  z-index: 2;
+  padding: 0.15rem 0.25rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.card-hero-source:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+.card-body {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(0.65rem, 2.2vw, 1.1rem) clamp(0.75rem, 2.5vw, 1.25rem)
+    clamp(0.65rem, 2vw, 1.05rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #fffefb;
+}
+
+/* 명언 영역: 동일 이미지를 배경으로 (불투명도↑), 위에 밝은 스크림으로 가독성 */
+.card-body--bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--quote-bg-image);
+  background-size: cover;
+  background-position: center;
+  opacity: var(--quote-bg-opacity, 0.42);
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.card-body--bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 254, 252, 0.96) 0%,
+    rgba(255, 253, 251, 0.92) 40%,
+    rgba(255, 251, 247, 0.95) 100%
+  );
+  pointer-events: none;
+}
+
+.card-body-content {
+  position: relative;
+  z-index: 1;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(28, 25, 23, 0.1);
+  margin: clamp(0.4rem, 1.5vw, 0.65rem) 0;
+}
+
+.quote-ko {
+  margin: 0;
+  font-size: clamp(1.02rem, 3.1vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.42;
+  letter-spacing: -0.03em;
+  color: #1c1917;
+}
+
+.quote-en {
+  margin: 0;
+  font-size: clamp(0.82rem, 2.2vw, 0.98rem);
+  font-weight: 500;
+  line-height: 1.58;
+  color: #44403c;
+  font-style: italic;
+}
+
+.name-row {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.35rem;
+  line-height: 1.45;
+}
+
+.name {
+  font-size: clamp(0.95rem, 2.8vw, 1.1rem);
+  font-weight: 700;
+  color: #9a3412;
+}
+
+.lifespan {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #a8a29e;
+  font-variant-numeric: tabular-nums;
+}
+
+.achievements {
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.82rem, 2.3vw, 0.9rem);
+  color: #57534e;
+  line-height: 1.55;
+}
+
+.context {
+  margin: 0;
+  font-size: clamp(0.75rem, 2.1vw, 0.8125rem);
+  color: #78716c;
+  line-height: 1.55;
+}
+
+.error {
+  width: min(calc(100vw - 1.35rem), calc(var(--card-max) * 1.72 + 3.25rem));
+  max-width: 100%;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+}
+
+.skeleton {
+  opacity: 0.5;
+}
